@@ -20,12 +20,10 @@ export class CardIssueRepository implements ICardIssueRepository {
   }
 
   async findByDocumentNumber(documentNumber: string): Promise<ICardIssue | null> {
-    for (const card of this.cardIssues.values()) {
-      if (card.customer.documentNumber === documentNumber) {
-        return card;
-      }
-    }
-    return null;
+    const card = Array.from(this.cardIssues.values()).find(
+      (c) => c.customer.documentNumber === documentNumber
+    );
+    return card || null;
   }
 
   async updateStatus(id: string, status: string): Promise<ICardIssue> {
