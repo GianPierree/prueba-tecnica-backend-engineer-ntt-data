@@ -30,7 +30,7 @@ export interface ICardIssueRepository {
 }
 
 export interface ICardIssueService {
-  create(cardIssue: Omit<ICardIssue, 'id' | 'status'>): Promise<Pick<ICardIssue, 'id' | 'status'>>;
+  create(cardIssue: Omit<ICardIssue, 'id' | 'status'>, source: string): Promise<Pick<ICardIssue, 'id' | 'status'>>;
   updateStatus(id: string, status: string): Promise<ICardIssue | null>;
 }
 
@@ -38,6 +38,7 @@ export interface ICardIssuePayload {
   cardId: string;
   status: string;
   forceError?: boolean;
+  source: string;
 }
 
 export interface ICardEmissionPayload {

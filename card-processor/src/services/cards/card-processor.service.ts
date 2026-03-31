@@ -9,6 +9,7 @@ import { IKafkaEventBroker } from '../../interfaces/kafka/kafka-event-broker.int
 import { IKafkaCloudEvent } from '../../interfaces/kafka/kafka-cloud-event.interface';
 import { KAFKA_TOPICS } from '../../shared/constants';
 import { ICardRetriesService } from '../../interfaces/cards/card-retries.interface';
+import { EventCounterUtil } from '../../utils/event-counter.util';
 
 @injectable()
 export class CardProcessorService implements ICardProcessorService {
@@ -37,14 +38,14 @@ export class CardProcessorService implements ICardProcessorService {
       return; 
     }
 
-    this.publishCardIssued(card);
+    this.publishCardIssued(card, cardProcessor.source);
   }
 
-  private publishCardIssued(card: ICardEmission): void {
+  private publishCardIssued(card: ICardEmission, source: string): void {
     const payload: IKafkaCloudEvent<ICardEmission> = {
-      id: crypto.randomUUID(),
+      id: EventCounterUtil.getInstance().next(),
       type: KAFKA_TOPICS.CARD_ISSUED,
-      source: '/services/cards/card-processor',
+      source,
       data: card,
       specversion: '1.0',
       time: new Date().toISOString(),

@@ -1,5 +1,5 @@
 export interface IKafkaCloudEvent<T> {
-  id: string;
+  id: number;
   source: string;
   specversion: string;
   type: string;

@@ -3,12 +3,13 @@ import pino from 'pino';
 
 import { ICardRetriesService } from '../../interfaces/cards/card-retries.interface';
 import { ICardEmission, ICardEmissionService } from '../../interfaces/cards/card-emission.interface';
-import { ICardIssuePayload } from '../../interfaces/cards/card-issue-payload.interface';
+import { ICardIssuePayload, IDLQPayload } from '../../interfaces/cards/card-issue-payload.interface';
 import { IKafkaEventBroker } from '../../interfaces/kafka/kafka-event-broker.interface';
 import { IKafkaCloudEvent } from '../../interfaces/kafka/kafka-cloud-event.interface';
 import { TYPES } from '../../types';
 import { KAFKA_TOPICS } from '../../shared/constants';
 import { ICardDuplicationService } from '../../interfaces/cards/card-duplication.interface';
+import { EventCounterUtil } from '../../utils/event-counter.util';
 
 @injectable()
 export class CardRetriesService implements ICardRetriesService {
@@ -51,12 +52,6 @@ export class CardRetriesService implements ICardRetriesService {
         return card;
       }
 
-      // if (!payload.forceError) {
-      //   this.cardDuplicationService.markFailed(payload.cardId, attempt);
-      //   this.logger.warn(`forceError is false. Skipping retry for card ${payload.cardId}`);
-      //   return null;
-      // }
-
       attempt++;
 
       if (attempt <= MAX_RETRIES) {
@@ -69,17 +64,25 @@ export class CardRetriesService implements ICardRetriesService {
 
     this.logger.error(`Exhausted ${MAX_RETRIES} retries. Sending event to DLQ.`);
     this.cardDuplicationService.markFailed(payload.cardId, attempt);
-    this.publishToDLQ(payload);
+    this.publishToDLQ(payload, attempt, 'Exhausted retries');
     
     return null;
   }
 
-  private publishToDLQ(payload: ICardIssuePayload): void {
-    const dlqEvent: IKafkaCloudEvent<ICardIssuePayload> = {
-      id: crypto.randomUUID(),
+  private publishToDLQ(payload: ICardIssuePayload, attempts: number, reason: string): void {
+    const dlqEvent: IKafkaCloudEvent<IDLQPayload> = {
+      id: EventCounterUtil.getInstance().next(),
       type: KAFKA_TOPICS.CARD_DLQ,
-      source: '/services/cards/card-retries',
-      data: payload,
+      source: payload.source,
+      data: {
+        originalPayload: payload,
+        reason,
+        attempts,
+        failedAt: new Date().toISOString(),
+        error: {
+          message: reason
+        }
+      },
       specversion: '1.0',
       time: new Date().toISOString(),
     };

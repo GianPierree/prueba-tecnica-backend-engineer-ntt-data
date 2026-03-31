@@ -11,6 +11,8 @@ import {
 import { IKafkaEventBroker } from '../../interfaces/kafka/kafka-event-broker.interface';
 import { IKafkaCloudEvent } from '../../interfaces/kafka/kafka-cloud-event.interface';
 import { KAFKA_TOPICS } from '../../shared/constants';
+import { EventCounterUtil } from '../../utils/event-counter.util';
+import { CardExistsError } from '../../utils/errors.util';
 
 @injectable()
 export class CardIssueService implements ICardIssueService {
@@ -31,7 +33,7 @@ export class CardIssueService implements ICardIssueService {
     @inject(TYPES.KafkaEventBrokerProvider) private readonly kafkaEventBrokerProvider: IKafkaEventBroker,
   ) {}
 
-  async create(cardIssue: Omit<ICardIssue, 'id'>): Promise<Pick<ICardIssue, 'id' | 'status'>> {
+  async create(cardIssue: Omit<ICardIssue, 'id'>, source: string): Promise<Pick<ICardIssue, 'id' | 'status'>> {
     try {
       await this.existsByDocumentNumber(cardIssue.customer.documentNumber);
       
@@ -39,7 +41,7 @@ export class CardIssueService implements ICardIssueService {
       this.logger.info(`Card issue created successfully: ${result.id}`);
 
       if (result) {
-        this.publishCardRequested(result);
+        this.publishCardRequested(result, source);
       }
 
       return {
@@ -63,14 +65,15 @@ export class CardIssueService implements ICardIssueService {
     }
   }
 
-  private publishCardRequested({ id, status, forceError }: ICardIssue): void {
+  private publishCardRequested({ id, status, forceError }: ICardIssue, source: string): void {
     const payload: IKafkaCloudEvent<ICardIssuePayload> = {
-      id: crypto.randomUUID(),
-      source: '/services/cards/card-issuer',
+      id: EventCounterUtil.getInstance().next(),
+      source,
       data: {
         cardId: id,
         status,
         forceError: forceError ?? false,
+        source,
       },
       type: KAFKA_TOPICS.CARD_REQUESTED,
       time: new Date().toISOString(),
@@ -82,7 +85,7 @@ export class CardIssueService implements ICardIssueService {
   private async existsByDocumentNumber(documentNumber: string): Promise<void> {
     const existingCard = await this.cardIssueRepository.findByDocumentNumber(documentNumber);
     if (existingCard) {
-      throw new Error('Card issue already exists');
+      throw new CardExistsError(documentNumber);
     }
   }
 }

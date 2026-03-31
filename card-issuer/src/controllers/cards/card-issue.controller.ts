@@ -3,6 +3,7 @@ import { inject, injectable } from 'inversify';
 
 import { TYPES } from '../../types';
 import { ICardIssueService } from '../../interfaces/cards/card-issue.interface';
+import { CardExistsError } from '../../utils/errors.util';
 
 @injectable()
 export class CardIssueController {
@@ -12,18 +13,23 @@ export class CardIssueController {
 
   async create(req: Request, res: Response) {
     try {
-      const cardIssue = await this.cardIssueService.create(req.body);
+      const cardIssue = await this.cardIssueService.create(req.body, req.requestId || 'unknown');
       res.status(201).json({
         success: true,
         message: 'Card issue created successfully',
-        requestId: req.requestId,
-        cardIssue: {
-          id: cardIssue.id,
-          status: cardIssue.status,
-        },
+        requestId: cardIssue.id,
+        status: cardIssue.status,
       });
     } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+      if (error instanceof CardExistsError) {
+        return res.status(409).json({ error: error.message });
+      }
+      
+      res.status(500).json({ 
+        success: false,
+        message: 'Internal server error',
+        error: (error as Error).message 
+      });
     }
   }
 }
