@@ -1,0 +1,28 @@
+{
+  "name": "prueba-tecnica-backend-engineer-ntt-data",
+  "version": "1.0.0",
+  "main": "index.js",
+  "workspaces": [
+    "card-issuer",
+    "card-processor"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"npm run dev --workspace=card-issuer\" \"npm run dev --workspace=card-processor\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GianPierree/prueba-tecnica-backend-engineer-ntt-data.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GianPierree/prueba-tecnica-backend-engineer-ntt-data/issues"
+  },
+  "homepage": "https://github.com/GianPierree/prueba-tecnica-backend-engineer-ntt-data#readme",
+  "description": "",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
