@@ -7,17 +7,19 @@ import {
   IsIn, 
   IsBoolean, 
   ValidateNested, 
-  IsDefined 
+  IsDefined, 
+  Matches
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class CustomerDto {
   @IsString()
-  @IsIn(['DNI', 'CE', 'RUC'], { message: 'El tipo de documento debe ser DNI, CE o RUC' })
+  @IsIn(['DNI'], { message: 'El tipo de documento debe ser DNI' })
   documentType!: string;
 
   @IsString()
   @IsNotEmpty({ message: 'El número de documento es obligatorio' })
+  @Matches(/^\d{8}$/, { message: 'El DNI debe tener exactamente 8 dígitos numéricos' })
   documentNumber!: string;
 
   @IsString()

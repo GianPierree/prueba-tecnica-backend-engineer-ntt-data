@@ -46,7 +46,10 @@ export class CardProcessorService implements ICardProcessorService {
       id: EventCounterUtil.getInstance().next(),
       type: KAFKA_TOPICS.CARD_ISSUED,
       source,
-      data: card,
+      data: {
+        ...card,
+        error: card.error || undefined,
+      },
       specversion: '1.0',
       time: new Date().toISOString(),
     };

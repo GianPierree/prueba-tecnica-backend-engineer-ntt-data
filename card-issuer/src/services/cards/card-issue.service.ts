@@ -74,6 +74,7 @@ export class CardIssueService implements ICardIssueService {
         status,
         forceError: forceError ?? false,
         source,
+        error: {},
       },
       type: KAFKA_TOPICS.CARD_REQUESTED,
       time: new Date().toISOString(),

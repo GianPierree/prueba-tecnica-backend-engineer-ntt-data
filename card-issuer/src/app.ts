@@ -3,6 +3,7 @@ import express from 'express';
 
 import { cardIssueRoutes } from './routes/card-issue.route';
 import { requestContextMiddleware } from './middlewares/request-context.middleware';
+import { rateLimiterMiddleware } from './middlewares/rate-limiter.middleware';
 import { container } from './configs/inversify.config';
 import { TYPES } from './types';
 import { IKafkaEventBroker } from './interfaces/kafka/kafka-event-broker.interface';
@@ -10,6 +11,8 @@ import { IKafkaEventBroker } from './interfaces/kafka/kafka-event-broker.interfa
 const app = express();
 app.use(express.json());
 app.use(requestContextMiddleware);
+app.use(rateLimiterMiddleware);
+
 app.use('/cards/issue', cardIssueRoutes);
 
 app.get('/health', (_req, res) => {

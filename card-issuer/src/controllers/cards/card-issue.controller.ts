@@ -22,7 +22,10 @@ export class CardIssueController {
       });
     } catch (error) {
       if (error instanceof CardExistsError) {
-        return res.status(409).json({ error: error.message });
+        return res.status(409).json({ 
+          success: false,
+          message: error.message 
+        });
       }
       
       res.status(500).json({ 

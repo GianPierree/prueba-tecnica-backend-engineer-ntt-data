@@ -39,6 +39,7 @@ export interface ICardIssuePayload {
   status: string;
   forceError?: boolean;
   source: string;
+  error?: object;
 }
 
 export interface ICardEmissionPayload {

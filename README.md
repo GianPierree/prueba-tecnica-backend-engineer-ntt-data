@@ -48,6 +48,7 @@ card-issuer/
 │   ├── routes/         # Definición de rutas REST
 │   ├── services/       # Casos de uso core (Dominio)
 │   ├── shared/         # Constantes (Tópicos de Kafka) y utilidades
+│   ├── utils/          # Utilidades generales
 │   ├── app.ts          # Configuración de Express
 │   ├── server.ts       # Punto de entrada y Shutdown
 │   └── types/          # Símbolos de Inversify
@@ -64,6 +65,7 @@ card-processor/
 │   ├── providers/      # Adaptadores de conexión (Kafka Producer/Consumer)
 │   ├── services/       # Lógica de negocio (Emisión, Reintentos, Simulador)
 │   ├── shared/         # Constantes globales
+│   ├── utils/          # Utilidades generales
 │   ├── worker.ts       # Punto de entrada del consumidor y Shutdown
 │   └── types/          # Símbolos de Inversify
 └── package.json
@@ -118,7 +120,7 @@ curl -X POST http://localhost:3000/cards/issue \
     "forceError": true
   }'
 ```
-*(Nota: El parámetro `forceError: true` indica al procesador que, si la simulación bancaria falla, debe aplicar la lógica de reintentos exponenciales).*
+*(Nota: El parámetro `forceError: true` fuerza que la simulación bancaria siempre falle, garantizando que se ejecuten los 3 reintentos con backoff exponencial y el evento llegue al DLQ.*
 
 **2. Verificar la Salud del Servicio**
 ```bash
@@ -149,4 +151,4 @@ Para garantizar la tolerancia a fallos en la integración con terceros, el `card
   * 1er reintento: Espera 1 segundo.
   * 2do reintento: Espera 2 segundos.
   * 3er reintento: Espera 4 segundos.
-* **Dead Letter Queue (DLQ):** Si después de los 3 reintentos el servicio bancario sigue fallando, el evento original junto con el motivo del error se publica en el tópico `io.card.dlq.v1`. Esto permite auditar y reprocesar el mensaje en el futuro sin perder datos.
+* **Dead Letter Queue (DLQ):** Si después de los 3 reintentos el servicio bancario sigue fallando, el evento original junto con el motivo del error se publica en el tópico `io.card.requested.v1.dlq`. Esto permite auditar y reprocesar el mensaje en el futuro sin perder datos.

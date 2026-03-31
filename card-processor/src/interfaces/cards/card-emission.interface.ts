@@ -4,6 +4,7 @@ export interface ICardEmission {
   cardNumber: string;
   expirationDate: string;
   cvv: string;
+  error?: object;
 }
 
 export interface ICardEmissionService {
