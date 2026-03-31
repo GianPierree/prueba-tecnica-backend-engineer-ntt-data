@@ -1,4 +1,4 @@
-type DocumentType = 'RUC' | 'DNI' | 'CE';
+type DocumentType = 'DNI';
 type ProductType = 'VISA';
 type Currency = 'PEN' | 'USD';
 

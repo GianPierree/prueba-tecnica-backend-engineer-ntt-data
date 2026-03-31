@@ -40,7 +40,7 @@ export class CardEmissionService implements ICardEmissionService {
       cvv: this.generateFakeCvv(),
     };
 
-    this.logger.info(`Card generated successfully: ${JSON.stringify(card)}`);
+    this.logger.info(`Card generated successfully: cardId=${card.id}, issuerId=${card.cardIssuerId}`);
     return card;
   }
 

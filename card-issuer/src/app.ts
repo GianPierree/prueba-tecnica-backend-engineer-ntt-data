@@ -16,7 +16,15 @@ app.use(rateLimiterMiddleware);
 app.use('/cards/issue', cardIssueRoutes);
 
 app.get('/health', (_req, res) => {
-  res.status(200).json({ message: 'Service is running' });
+  res.status(200).json({ 
+    status: 'ok',
+    message: 'Service is running',
+    service: 'card-issuer',
+    timestamp: new Date().toISOString(),
+    dependencies: {
+      kafka: 'connected',
+    }
+  });
 });
 
 const kafkaBroker = container.get<IKafkaEventBroker>(TYPES.KafkaEventBrokerProvider);
