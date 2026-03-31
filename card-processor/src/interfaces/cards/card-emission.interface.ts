@@ -7,5 +7,5 @@ export interface ICardEmission {
 }
 
 export interface ICardEmissionService {
-  generateCard(cardIssuerId: string): Promise<ICardEmission | null>;
+  generateCard(cardIssuerId: string, forceError?: boolean): Promise<ICardEmission | null>;
 }

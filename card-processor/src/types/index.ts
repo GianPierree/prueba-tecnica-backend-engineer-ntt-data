@@ -6,4 +6,5 @@ export const TYPES = {
   CardEmissionService: Symbol('CardEmissionService'),
   CardProcessorService: Symbol('CardProcessorService'),
   CardRetriesService: Symbol.for('CardRetriesService'),
+  CardDuplicationService: Symbol('CardDuplicationService'),
 };

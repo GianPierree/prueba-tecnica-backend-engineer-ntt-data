@@ -8,6 +8,7 @@ import { IKafkaEventBroker } from '../../interfaces/kafka/kafka-event-broker.int
 import { IKafkaCloudEvent } from '../../interfaces/kafka/kafka-cloud-event.interface';
 import { TYPES } from '../../types';
 import { KAFKA_TOPICS } from '../../shared/constants';
+import { ICardDuplicationService } from '../../interfaces/cards/card-duplication.interface';
 
 @injectable()
 export class CardRetriesService implements ICardRetriesService {
@@ -26,9 +27,15 @@ export class CardRetriesService implements ICardRetriesService {
   constructor(
     @inject(TYPES.CardEmissionService) private readonly cardEmissionService: ICardEmissionService,
     @inject(TYPES.KafkaEventBrokerProvider) private readonly kafkaEventBroker: IKafkaEventBroker,
+    @inject(TYPES.CardDuplicationService) private readonly cardDuplicationService: ICardDuplicationService,
   ) {}
 
   async processWithRetries(payload: ICardIssuePayload): Promise<ICardEmission | null> {
+    if (this.cardDuplicationService.isProcessed(payload.cardId)) {
+      this.logger.warn(`Duplicate event detected, skipping: cardId=${payload.cardId}`);
+      return null;
+    }
+
     const MAX_RETRIES = 3;
     let attempt = 0;
 
@@ -37,16 +44,18 @@ export class CardRetriesService implements ICardRetriesService {
         this.logger.info(`Attempt ${attempt} of ${MAX_RETRIES} for card ${payload.cardId}.`);
       }
 
-      const card = await this.cardEmissionService.generateCard(payload.cardId);
+      const card = await this.cardEmissionService.generateCard(payload.cardId, payload.forceError);
 
       if (card) {
+        this.cardDuplicationService.markProcessed(payload.cardId, attempt);
         return card;
       }
 
-      if (!payload.forceError) {
-        this.logger.warn(`forceError is false. Skipping retry for card ${payload.cardId}`);
-        return null;
-      }
+      // if (!payload.forceError) {
+      //   this.cardDuplicationService.markFailed(payload.cardId, attempt);
+      //   this.logger.warn(`forceError is false. Skipping retry for card ${payload.cardId}`);
+      //   return null;
+      // }
 
       attempt++;
 
@@ -59,6 +68,7 @@ export class CardRetriesService implements ICardRetriesService {
     }
 
     this.logger.error(`Exhausted ${MAX_RETRIES} retries. Sending event to DLQ.`);
+    this.cardDuplicationService.markFailed(payload.cardId, attempt);
     this.publishToDLQ(payload);
     
     return null;

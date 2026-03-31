@@ -25,6 +25,7 @@ export interface ICardIssue {
 
 export interface ICardIssueRepository {
   save(cardIssue: Omit<ICardIssue, 'id' | 'status'>): Promise<ICardIssue>;
+  findByDocumentNumber(documentNumber: string): Promise<ICardIssue | null>;
   updateStatus(id: string, status: string): Promise<ICardIssue>;
 }
 

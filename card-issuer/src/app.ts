@@ -10,7 +10,7 @@ import { IKafkaEventBroker } from './interfaces/kafka/kafka-event-broker.interfa
 const app = express();
 app.use(express.json());
 app.use(requestContextMiddleware);
-app.use('/card-issue', cardIssueRoutes);
+app.use('/cards/issue', cardIssueRoutes);
 
 app.get('/health', (_req, res) => {
   res.status(200).json({ message: 'Service is running' });

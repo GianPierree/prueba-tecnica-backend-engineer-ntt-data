@@ -19,6 +19,15 @@ export class CardIssueRepository implements ICardIssueRepository {
     return newCardIssue;
   }
 
+  async findByDocumentNumber(documentNumber: string): Promise<ICardIssue | null> {
+    for (const card of this.cardIssues.values()) {
+      if (card.customer.documentNumber === documentNumber) {
+        return card;
+      }
+    }
+    return null;
+  }
+
   async updateStatus(id: string, status: string): Promise<ICardIssue> {
     const card = this.cardIssues.get(id);
     

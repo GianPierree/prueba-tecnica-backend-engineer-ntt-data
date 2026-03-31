@@ -101,7 +101,7 @@ Puedes utilizar Postman, Insomnia o cURL para interactuar con la API.
 
 **1. Solicitar la Emisión de una Tarjeta (Flujo Exitoso / Reintentos)**
 ```bash
-curl -X POST http://localhost:3000/card-issue \
+curl -X POST http://localhost:3000/cards/issue \
   -H "Content-Type: application/json" \
   -d '{
     "customer": {

@@ -21,11 +21,11 @@ export class CardEmissionService implements ICardEmissionService {
     },
   });
 
-  async generateCard(cardIssuerId: string): Promise<ICardEmission | null> {
+  async generateCard(cardIssuerId: string, forceError?: boolean): Promise<ICardEmission | null> {
     const delay = Math.floor(Math.random() * (500 - 200 + 1)) + 200;
     await new Promise((resolve) => setTimeout(resolve, delay));
 
-    const isSuccess = Math.random() < 0.8; 
+    const isSuccess = forceError ? false : Math.random() < 0.8; 
     
     if (!isSuccess) {
       this.logger.error('BANK_INTEGRATION_ERROR: Card generation failed.');

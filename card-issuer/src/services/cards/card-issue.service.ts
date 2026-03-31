@@ -33,6 +33,8 @@ export class CardIssueService implements ICardIssueService {
 
   async create(cardIssue: Omit<ICardIssue, 'id'>): Promise<Pick<ICardIssue, 'id' | 'status'>> {
     try {
+      await this.existsByDocumentNumber(cardIssue.customer.documentNumber);
+      
       const result = await this.cardIssueRepository.save(cardIssue);
       this.logger.info(`Card issue created successfully: ${result.id}`);
 
@@ -75,5 +77,12 @@ export class CardIssueService implements ICardIssueService {
       specversion: '1.0',
     };
     this.kafkaEventBrokerProvider.publish<ICardIssuePayload>(KAFKA_TOPICS.CARD_REQUESTED, payload);
+  }
+
+  private async existsByDocumentNumber(documentNumber: string): Promise<void> {
+    const existingCard = await this.cardIssueRepository.findByDocumentNumber(documentNumber);
+    if (existingCard) {
+      throw new Error('Card issue already exists');
+    }
   }
 }
